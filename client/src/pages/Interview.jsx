@@ -55,6 +55,8 @@ export default function Interview() {
   const recognitionRef = useRef(null);
   const autoSubmittedRef = useRef(false);
 
+  const [askedQuestions, setAskedQuestions] = useState([]);
+
   useEffect(() => {
     localStorage.setItem("defaultDifficulty", difficulty);
   }, [difficulty]);
@@ -142,7 +144,7 @@ export default function Interview() {
     return () => clearInterval(timerRef.current);
   }, [isTimerRunning, question, answer]);
 
-  const formattedTime = useMemo(() => {
+    const formattedTime = useMemo(() => {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
@@ -201,9 +203,9 @@ export default function Interview() {
       const res = await API.post("/interview/question", {
         role,
         difficulty,
-        lastQuestion: question,
+        askedQuestions,
       });
-
+      setAskedQuestions((prev) => [...prev, res.data.question]);
       setQuestion(res.data.question);
       localStorage.removeItem("draftAnswer");
       clearInterval(timerRef.current);
@@ -270,6 +272,7 @@ export default function Interview() {
     setIsTimerRunning(false);
     setTimeLeft(selectedTime);
     setIsListening(false);
+    setAskedQuestions([]);
     autoSubmittedRef.current = false;
     localStorage.removeItem("draftAnswer");
   };
